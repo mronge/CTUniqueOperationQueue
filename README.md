@@ -30,14 +30,15 @@ You can also use all the existing NSOperationQueue methods, which is useful for 
 ## Contact
 
 Matt Ronge  
-[@mronge](http://www.twitter.com/mronge)
+[@mronge](http://www.twitter.com/mronge)  
 [http://www.mronge.com](http://www.mronge.com)
 
 ## License
 
 (The 3-clause BSD license)
 
-Copyright (C) 2012 - Matt Ronge &lt;mronge@mronge.com&gt; All rights reserved.
+Copyright (C) 2012 - Matt Ronge &lt;mronge@mronge.com&gt;  
+All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
