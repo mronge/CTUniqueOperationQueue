@@ -32,7 +32,18 @@
 #import <Foundation/Foundation.h>
 
 @interface CTUniqueOperationQueue : NSOperationQueue
+/*!
+ * Adds a NSOperation if there isn't already one in the queue with the specified id
+ */
 - (void)addOperation:(NSOperation *)op withID:(NSString *)aID;
+
+/*!
+ * Adds a block operation if there isn't already one in the queue with the specified id
+ */
 - (void)addOperationWithBlock:(void (^)(void))block withID:(NSString *)aID;
+
+/*!
+ * Cancels the operation, if there is one, which matches the specified id
+ */
 - (void)cancelOperationWithID:(NSString *)anID;
 @end
