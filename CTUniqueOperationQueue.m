@@ -45,11 +45,18 @@
 
 - (void)addOperation:(NSOperation *)op withID:(NSString *)aID {
     NSString *anIdCopy = [aID copy];
+    __weak NSOperation *weakOp = op;
     
     void (^realCompletionBlock)() = op.completionBlock;
     op.completionBlock = ^{
         @synchronized(self) {
-            [idToOp removeObjectForKey:anIdCopy];
+            // Make sure we are removing the right object, because
+            // if the op was cancelled and it was replaced, we
+            // don't want to remove the op that replaced it
+            NSOperation *opInQueue = [idToOp objectForKey:aID];
+            if (weakOp == opInQueue) {
+                [idToOp removeObjectForKey:anIdCopy];
+            }
         }
         if (realCompletionBlock) {
             realCompletionBlock();
@@ -57,7 +64,11 @@
     };
     
     @synchronized(self) {
-        if (![idToOp objectForKey:aID]) {
+        NSOperation *opInQueue = [idToOp objectForKey:aID];
+        
+        // If the op isn't already in the queue or if there is one in the queue
+        // but it is cancelled, we'll let another one in.
+        if (!opInQueue || opInQueue.isCancelled) {
             [idToOp setValue:op forKey:anIdCopy];
             
             [super addOperation:op];
@@ -69,7 +80,6 @@
     [self addOperation:[NSBlockOperation blockOperationWithBlock:block] withID:aID];
 }
 
-//TODO: try nil
 - (void)cancelOperationWithID:(NSString *)anID {
     @synchronized(self) {
         NSOperation *op = [idToOp objectForKey:anID];

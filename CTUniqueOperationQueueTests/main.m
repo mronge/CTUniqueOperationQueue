@@ -82,6 +82,27 @@ int main(int argc, const char * argv[])
         [queue setSuspended:NO];
         [queue waitUntilAllOperationsAreFinished];
         
+        {
+            NSLog(@"Testing out cancelling and then immediately adding op again");
+            [queue setSuspended:YES];
+            SlowOp *slowOp = [[SlowOp alloc] init];
+            slowOp.completionBlock = ^{ NSLog(@"SlowOp finished"); };
+            [queue addOperation:slowOp withID:@"D"];
+            TestOp *testOp1 = [[TestOp alloc] init];
+            testOp1.completionBlock = ^{ NSLog(@"TestOp1 finished"); };
+            [queue addOperation:testOp1 withID:@"A"];
+            [queue setSuspended:NO];
+            [queue cancelOperationWithID:@"A"];
+            [queue setSuspended:YES];
+            TestOp *testOp2 = [[TestOp alloc] init];
+            testOp2.completionBlock = ^{ NSLog(@"TestOp2 finished"); };
+            [queue addOperation:testOp2 withID:@"A"];
+            assert([queue.operations containsObject:testOp2] == YES);
+            [queue setSuspended:NO];
+        }
+        
+        [queue waitUntilAllOperationsAreFinished];
+        
         NSLog(@"SUCCESS");
     }
     return 0;
