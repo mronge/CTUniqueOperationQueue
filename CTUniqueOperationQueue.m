@@ -87,4 +87,29 @@
     }
 }
 
+- (NSOperation *)operationWithID:(NSString *)anID
+{
+    @synchronized(self) {
+        NSOperation *op = [idToOp objectForKey:anID];
+        return op;
+    }
+}
+
+- (void)addOrSetQueuePriority:(NSOperationQueuePriority)priority operation:(NSOperation *)op withID:(NSString *)anID
+{
+    @synchronized(self)
+    {
+        NSOperation *existingOperation = [idToOp objectForKey:anID];
+        if (existingOperation)
+        {
+            [existingOperation setQueuePriority:priority];
+        }
+        else
+        {
+            [op setQueuePriority:priority];
+            [self addOperation:op withID:anID];
+        }
+    }
+}
+
 @end

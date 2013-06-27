@@ -100,9 +100,28 @@ int main(int argc, const char * argv[])
             assert([queue.operations containsObject:testOp2] == YES);
             [queue setSuspended:NO];
         }
-        
+
         [queue waitUntilAllOperationsAreFinished];
+
+        [queue setSuspended:YES];
         
+        NSLog(@"Adding more stuff to queue");
+        [queue addOperation:[[TestOp alloc] init] withID:@"A"];
+        assert(queue.operationCount == 1);
+        assert([queue operationWithID:@"A"].queuePriority == NSOperationQueuePriorityNormal);
+
+        // New item should just be added
+        [queue addOperation:[[TestOp alloc] init] withID:@"B"];
+        assert(queue.operationCount == 2);
+
+        // Same item still queued should have priority changed
+        [queue addOrSetQueuePriority:NSOperationQueuePriorityHigh operation:[[TestOp alloc] init] withID:@"A"];
+        assert(queue.operationCount == 2);
+        assert([queue operationWithID:@"A"].queuePriority == NSOperationQueuePriorityHigh);
+        [queue setSuspended:NO];
+        [queue waitUntilAllOperationsAreFinished];
+
+
         NSLog(@"SUCCESS");
     }
     return 0;
