@@ -100,7 +100,7 @@
     @synchronized(self)
     {
         NSOperation *existingOperation = [idToOp objectForKey:anID];
-        if (existingOperation)
+        if (existingOperation && ![existingOperation isExecuting])
         {
             [existingOperation setQueuePriority:priority];
         }
