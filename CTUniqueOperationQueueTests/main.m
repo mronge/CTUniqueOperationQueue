@@ -100,9 +100,43 @@ int main(int argc, const char * argv[])
             assert([queue.operations containsObject:testOp2] == YES);
             [queue setSuspended:NO];
         }
-        
+
         [queue waitUntilAllOperationsAreFinished];
+
+        [queue setSuspended:YES];
         
+        NSLog(@"Adding more stuff to queue");
+        TestOp *op1 = [[TestOp alloc] init];
+        [queue addOperation:op1 withID:@"A"];
+        assert(queue.operationCount == 1);
+        assert([queue operationWithID:@"A"].queuePriority == NSOperationQueuePriorityNormal);
+
+        // New item should just be added
+        [queue addOperation:[[TestOp alloc] init] withID:@"B"];
+        assert(queue.operationCount == 2);
+
+        // Same item still queued should have priority changed
+        TestOp *op2 = [[TestOp alloc] init];
+        [queue addOrSetQueuePriority:NSOperationQueuePriorityHigh operation:op2 withID:@"A"];
+        assert(queue.operationCount == 3);
+        assert(op1.queuePriority == NSOperationQueuePriorityNormal);
+        assert(op1.isCancelled == YES);
+        assert(op2.queuePriority == NSOperationQueuePriorityHigh);
+        assert(op2.isCancelled == NO);
+        assert([queue operationWithID:@"A"].queuePriority == NSOperationQueuePriorityHigh);
+
+        TestOp *op3 = [[TestOp alloc] init];
+        [queue addOrSetQueuePriority:NSOperationQueuePriorityHigh operation:op3 withID:@"A"];
+        assert(queue.operationCount == 3);
+        assert(op1.queuePriority == NSOperationQueuePriorityNormal);
+        assert(op1.isCancelled == YES);
+        assert(op2.queuePriority == NSOperationQueuePriorityHigh);
+        assert(op2.isCancelled == NO);
+
+        [queue setSuspended:NO];
+        [queue waitUntilAllOperationsAreFinished];
+
+
         NSLog(@"SUCCESS");
     }
     return 0;

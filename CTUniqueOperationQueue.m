@@ -87,4 +87,35 @@
     }
 }
 
+- (NSOperation *)operationWithID:(NSString *)anID {
+    @synchronized(self) {
+        NSOperation *op = [idToOp objectForKey:anID];
+        return op;
+    }
+}
+
+- (void)addOrSetQueuePriority:(NSOperationQueuePriority)priority operation:(NSOperation *)op withID:(NSString *)anID {
+    @synchronized(self) {
+        NSOperation *existingOperation = [idToOp objectForKey:anID];
+        if (existingOperation) {
+            if ([existingOperation isExecuting]) {
+                // do nothing, too late to change priority
+            }
+            else if (existingOperation.queuePriority == priority) {
+                // do nothing, priority has not changed
+            }
+            else {
+                // http://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationObjects/OperationObjects.html#//apple_ref/doc/uid/TP40008091-CH101-SW38 says to never modify an operation once placed in a queue, so if it has not yet started, cancel and add the same operation but with a new priority.
+                [existingOperation cancel];
+                [op setQueuePriority:priority];
+                [self addOperation:op withID:anID];
+            }
+        }
+        else {
+            [op setQueuePriority:priority];
+            [self addOperation:op withID:anID];
+        }
+    }
+}
+
 @end
