@@ -44,12 +44,10 @@
 }
 
 - (void)addOperation:(NSOperation *)op withID:(NSString *)aID {
-    if (![aID length])
-    {
+    if (![aID length]) {
         return;
     }
-    if (!op)
-    {
+    if (!op) {
         return;
     }
     NSString *anIdCopy = [aID copy];
