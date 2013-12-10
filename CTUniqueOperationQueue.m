@@ -44,9 +44,17 @@
 }
 
 - (void)addOperation:(NSOperation *)op withID:(NSString *)aID {
+    if (![aID length])
+    {
+        return;
+    }
+    if (!op)
+    {
+        return;
+    }
     NSString *anIdCopy = [aID copy];
     __weak NSOperation *weakOp = op;
-    
+
     void (^realCompletionBlock)() = op.completionBlock;
     op.completionBlock = ^{
         @synchronized(self) {
@@ -62,15 +70,15 @@
             realCompletionBlock();
         }
     };
-    
+
     @synchronized(self) {
         NSOperation *opInQueue = [idToOp objectForKey:aID];
-        
+
         // If the op isn't already in the queue or if there is one in the queue
         // but it is cancelled, we'll let another one in.
         if (!opInQueue || opInQueue.isCancelled) {
             [idToOp setValue:op forKey:anIdCopy];
-            
+
             [super addOperation:op];
         }
     }
